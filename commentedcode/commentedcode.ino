@@ -25,21 +25,21 @@ int sum;
 
 // LOCAL FUNCTIONS
 void update_display(int dB) { // updates the lcd display
-  if (clear == true) {
+  if (clear == true) { // checks the clear condition, if true it clears
     lcd.clear();
   }
   clear = false;
 
-  lcd.setCursor(0,0);
+  lcd.setCursor(0,0); // displays the loudness in dB
   lcd.print("Loudness: ");
   lcd.print(dB);
   lcd.print(" dB");
 
-  if (dB > limit) {
+  if (dB > limit) { // if its too loud
     lcd.setCursor(0,1);
     lcd.print("OVER LIMIT");
 
-    for (int i = 0; i<10; i++){
+    for (int i = 0; i<10; i++){ // visual flashing alert
       digitalWrite(backlightpin, LOW); // turns off the backlight LED
       delay(100);
       digitalWrite(backlightpin, HIGH); // turns on the backlight LED
@@ -59,8 +59,8 @@ void update_display(int dB) { // updates the lcd display
 
 // ARDUINO FUNCTIONS
 void setup() {
-  pinMode(analogpin, INPUT);
-  pinMode(backlightpin, OUTPUT);
+  pinMode(analogpin, INPUT); // microphone analog pin setup
+  pinMode(backlightpin, OUTPUT); // lcd display backlight pin setup
   Serial.begin(9600);
   lcd.begin(16, 2);// set up the LCD's number of columns and rows
   digitalWrite(backlightpin, HIGH); // turns on the display backlight
@@ -68,32 +68,32 @@ void setup() {
 }
 
 void loop() {
-  analogread = analogRead(analogpin);
-  analogread = map(analogread, 470, 570, 0, 1023);
+  analogread = analogRead(analogpin); // takes analog reading
+  analogread = map(analogread, 470, 570, 0, 1023); // maps reading into 0 to 1023 (for greater range)
 
   current = millis();
-  elapsed = current - last; // taking the sample time
+  elapsed = current - last; // tracking the sample time
 
-  if (analogread > highestread){ // finding max and min in a sample
+  if (analogread > highestread){ // finding max in a sample
     highestread = analogread;
   }
-  else if (analogread < lowestread){
+  else if (analogread < lowestread){ // find min in a sample
     lowestread = analogread;
   }
 
   if (elapsed > sample_time){ // taking the delta the end of a sample
-    samplecount++;
+    samplecount++; // counting samples
     int delta = highestread-lowestread;
-    sum += delta;
+    sum += delta; // sum of all deltas in 10 samples
 
     if (samplecount > maxsamples){ // taking the average after a set of samples
       int average = sum/maxsamples;
       // int dB = 50 + 10*log10(average/30); // doesnt work lmao
-      int dB = map(average, 0, 512, 50, 100);
-      update_display(dB);
+      int dB = map(average, 0, 512, 50, 100); // maps sensor readings into decibels (tries to)
+      update_display(dB); // updates display
       
-      sum = 0;
-      samplecount = 0;
+      sum = 0; // resetting sum
+      samplecount = 0; // resetting sample count
 
     }
     
